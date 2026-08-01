@@ -1,29 +1,29 @@
 local gpu_adapters = require('utils.gpu-adapter')
-local backdrops = require('utils.backdrops')
 local colors = require('colors.custom')
 
 ---@type Config
 return {
-   max_fps = 120,
-   front_end = 'WebGpu', ---@type 'WebGpu' | 'OpenGL' | 'Software'
-   webgpu_power_preference = 'HighPerformance',
-   webgpu_preferred_adapter = gpu_adapters:pick_best(),
-   -- webgpu_preferred_adapter = gpu_adapters:pick_manual('Dx12', 'IntegratedGpu'),
-   -- webgpu_preferred_adapter = gpu_adapters:pick_manual('Gl', 'Other'),
+   front_end = 'WebGpu',
+   -- Panel is 60Hz.
+   max_fps = 60,
+   -- Intel iGPU drives the display on this hybrid laptop; the discrete AMD
+   -- would render offscreen and copy back.
+   webgpu_power_preference = 'LowPower',
+   webgpu_preferred_adapter = gpu_adapters:pick_manual('Vulkan', 'IntegratedGpu'),
    underline_thickness = '1.5pt',
 
    -- cursor
-   animation_fps = 120,
-   cursor_blink_ease_in = 'EaseOut',
-   cursor_blink_ease_out = 'EaseOut',
+   animation_fps = 1, -- no easing animation
+   cursor_blink_ease_in = 'Constant',
+   cursor_blink_ease_out = 'Constant',
    default_cursor_style = 'BlinkingBlock',
    cursor_blink_rate = 650,
 
    -- color scheme
    colors = colors,
 
-   -- background: pass in `true` if you want wezterm to start with focus mode on (no bg images)
-   background = backdrops:initial_options({ no_img = false }),
+   -- background: transparent, shows the desktop wallpaper
+   window_background_opacity = 0.82,
 
    -- scrollbar
    enable_scroll_bar = true,
@@ -44,8 +44,8 @@ return {
 
    -- window
    window_padding = {
-      left = 0,
-      right = 0,
+      left = 8,
+      right = 8,
       top = 10,
       bottom = 7.5,
    },

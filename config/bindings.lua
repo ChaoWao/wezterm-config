@@ -1,6 +1,5 @@
 local wezterm = require('wezterm')
 local platform = require('utils.platform')
-local backdrops = require('utils.backdrops')
 local act = wezterm.action
 
 local mod = {}
@@ -127,48 +126,16 @@ local keys = {
 
    -- background controls --
    {
-      key = [[/]],
-      mods = mod.SUPER,
-      action = wezterm.action_callback(function(window, _pane)
-         backdrops:random(window)
-      end),
-   },
-   {
-      key = [[,]],
-      mods = mod.SUPER,
-      action = wezterm.action_callback(function(window, _pane)
-         backdrops:cycle_back(window)
-      end),
-   },
-   {
-      key = [[.]],
-      mods = mod.SUPER,
-      action = wezterm.action_callback(function(window, _pane)
-         backdrops:cycle_forward(window)
-      end),
-   },
-   {
-      key = [[/]],
-      mods = mod.SUPER_REV,
-      action = act.InputSelector({
-         title = 'InputSelector: Select Background',
-         choices = backdrops:choices(),
-         fuzzy = true,
-         fuzzy_description = 'Select Background: ',
-         action = wezterm.action_callback(function(window, _pane, idx)
-            if not idx then
-               return
-            end
-            ---@diagnostic disable-next-line: param-type-mismatch
-            backdrops:set_img(window, tonumber(idx))
-         end),
-      }),
-   },
-   {
       key = 'b',
       mods = mod.SUPER,
       action = wezterm.action_callback(function(window, _pane)
-         backdrops:toggle_focus(window)
+         local overrides = window:get_config_overrides() or {}
+         if overrides.window_background_opacity == 1.0 then
+            overrides.window_background_opacity = nil -- back to the configured 0.82
+         else
+            overrides.window_background_opacity = 1.0 -- opaque "focus mode"
+         end
+         window:set_config_overrides(overrides)
       end)
    },
 
@@ -228,6 +195,20 @@ local keys = {
       }),
    },
 }
+
+-- tmux window switching: Alt+1..8 sends the C-b prefix then the digit.
+-- ~/.tmux.conf sets `base-index 1`, so these map to windows 1-8.
+for i = 1, 8 do
+   local digit = tostring(i)
+   table.insert(keys, {
+      key = digit,
+      mods = mod.SUPER,
+      action = act.Multiple({
+         act.SendKey({ key = 'b', mods = 'CTRL' }),
+         act.SendKey({ key = digit }),
+      }),
+   })
+end
 
 -- stylua: ignore
 ---@type table<string, Key[]>
